@@ -8,5 +8,4 @@ In the current version, the program can only understand NTFS filesystem, but oth
 
 Limitations:
  - only understands NTFS. (ext2/3/4 in the TODO list);
- - Only works with single images (no differential image or snapshot). Fix is on the way.
  - No command line interface yet (planned).

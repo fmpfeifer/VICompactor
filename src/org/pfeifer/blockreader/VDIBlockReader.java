@@ -347,6 +347,21 @@ public class VDIBlockReader extends BlockReader {
      * @return the uuidParent
      */
     public UUID getUuidParent() {
-        return uuidParent;
+        //return uuidParent;
+        return uuidLink;
+    }
+
+    /**
+     * @return the uuidThisVDI
+     */
+    public UUID getUuidThisVDI() {
+        return uuidThisVDI;
+    }
+
+    /**
+     * @param parent the parent to set
+     */
+    public void setParent(BlockReader parent) {
+        this.parent = parent;
     }
 }

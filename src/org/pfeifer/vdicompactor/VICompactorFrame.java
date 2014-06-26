@@ -52,6 +52,10 @@ public class VICompactorFrame extends javax.swing.JFrame {
         btnChoose = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
         btnCompact = new javax.swing.JButton();
+        chkSearchCurrentDirectory = new javax.swing.JCheckBox();
+        lbAdditionalDir = new javax.swing.JLabel();
+        txtDir = new javax.swing.JTextField();
+        btnChooseDir = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Virtual Image Compactor");
@@ -72,6 +76,18 @@ public class VICompactorFrame extends javax.swing.JFrame {
             }
         });
 
+        chkSearchCurrentDirectory.setSelected(true);
+        chkSearchCurrentDirectory.setText("Search current directory for parent VDIs");
+
+        lbAdditionalDir.setText("Additional directory to search for parent VDIs:");
+
+        btnChooseDir.setText("...");
+        btnChooseDir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChooseDirActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -80,30 +96,49 @@ public class VICompactorFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lbFile)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtFile)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lbFile)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(txtFile))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnChoose))
+                    .addComponent(chkSearchCurrentDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lbAdditionalDir)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnCompact)))
+                        .addComponent(btnCompact))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(txtDir)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnChooseDir)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(lbFile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbFile)
                     .addComponent(txtFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnChoose))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(chkSearchCurrentDirectory)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbAdditionalDir)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnChooseDir))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnCompact)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -171,7 +206,8 @@ public class VICompactorFrame extends javax.swing.JFrame {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    compactor.compactVDI(txtFile.getText());
+                    compactor.compactVDI(txtFile.getText(), txtDir.getText(), 
+                            chkSearchCurrentDirectory.isSelected());
                     success = true;
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(VICompactorFrame.this,
@@ -192,6 +228,29 @@ public class VICompactorFrame extends javax.swing.JFrame {
         worker.execute();
     }//GEN-LAST:event_btnCompactActionPerformed
 
+    private void btnChooseDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChooseDirActionPerformed
+        final JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File file) {
+                return file.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Directories only";
+            }
+        }
+        );
+        int result = fc.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File f = fc.getSelectedFile();
+            txtDir.setText(f.getAbsolutePath());
+        }
+    }//GEN-LAST:event_btnChooseDirActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -208,13 +267,7 @@ public class VICompactorFrame extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VICompactorFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VICompactorFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VICompactorFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(VICompactorFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
@@ -230,9 +283,13 @@ public class VICompactorFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnChoose;
+    private javax.swing.JButton btnChooseDir;
     private javax.swing.JButton btnCompact;
+    private javax.swing.JCheckBox chkSearchCurrentDirectory;
+    private javax.swing.JLabel lbAdditionalDir;
     private javax.swing.JLabel lbFile;
     private javax.swing.JProgressBar progressBar;
+    private javax.swing.JTextField txtDir;
     private javax.swing.JTextField txtFile;
     // End of variables declaration//GEN-END:variables
 }
