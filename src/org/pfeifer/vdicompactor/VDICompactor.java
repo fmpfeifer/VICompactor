@@ -1,20 +1,20 @@
 /*
-Copyright 2014-2014
-Fabio Melo Pfeifer
+ Copyright 2014-2014
+ Fabio Melo Pfeifer
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.pfeifer.vdicompactor;
 
 import java.io.File;
@@ -41,11 +41,17 @@ public class VDICompactor {
     private final Set<CompactProgressListener> progressListeners = new LinkedHashSet<>();
 
     /**
-     * 
+     *
      * @param file
-     * @throws IOException 
+     * @throws IOException
      */
     public void compactVDI(String file) throws IOException {
+        VDIBlockReader vdi1 = new VDIBlockReader(new FileBlockReader(file));
+        if (vdi1.getUuidParent().getLeastSignificantBits() != 0
+                || vdi1.getUuidParent().getMostSignificantBits() != 0) {
+            throw new IOException("File is a differencial image.");
+        }
+        vdi1.close();
         int i = file.lastIndexOf('.');
         String origFile = null;
         if (i > 0 && i < file.length() - 1) {
@@ -60,7 +66,8 @@ public class VDICompactor {
             }
         }
         if (origFile != null) {
-            BlockReader reader = new BufferedBlockReader(new FileBlockReader(origFile), 1024*1024*2);
+            BlockReader reader = new BufferedBlockReader(new FileBlockReader(origFile),
+                    1024 * 1024 * 2);
             VDIBlockReader vdiReader = new VDIBlockReader(reader);
             compactVDI(vdiReader, file);
         }
@@ -112,7 +119,7 @@ public class VDICompactor {
                 writer.write(buffer, pos, read);
                 pos += read;
             }
-            event.setCompleted((int)(pos * 1000L / length));
+            event.setCompleted((int) (pos * 1000L / length));
             fireProgressEvent(event);
         }
 

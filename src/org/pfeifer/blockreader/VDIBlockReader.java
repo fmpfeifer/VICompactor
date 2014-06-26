@@ -342,4 +342,11 @@ public class VDIBlockReader extends BlockReader {
     public BlockReader getParent() {
         return parent;
     }
+
+    /**
+     * @return the uuidParent
+     */
+    public UUID getUuidParent() {
+        return uuidParent;
+    }
 }

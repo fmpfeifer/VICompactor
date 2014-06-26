@@ -1,24 +1,25 @@
 /*
-Copyright 2014-2014
-Fabio Melo Pfeifer
+ Copyright 2014-2014
+ Fabio Melo Pfeifer
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.pfeifer.vdicompactor;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
@@ -157,26 +158,36 @@ public class VICompactorFrame extends javax.swing.JFrame {
                     public void run() {
                         progressBar.setValue(event.getCompleted());
                     }
-                    
+
                 });
-                
+
             }
         });
-        
+
         SwingWorker worker = new SwingWorker() {
+
+            private boolean success = false;
 
             @Override
             protected Object doInBackground() throws Exception {
-                compactor.compactVDI(txtFile.getText());
+                try {
+                    compactor.compactVDI(txtFile.getText());
+                    success = true;
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(VICompactorFrame.this,
+                            "Error: " + e.getMessage(),
+                            "Error processing file", JOptionPane.ERROR_MESSAGE);
+                }
                 return null;
             }
 
             @Override
             protected void done() {
-                JOptionPane.showMessageDialog(VICompactorFrame.this, "File compacted.");
+                if (success) {
+                    JOptionPane.showMessageDialog(VICompactorFrame.this, "File compacted.");
+                }
             }
-            
-            
+
         };
         worker.execute();
     }//GEN-LAST:event_btnCompactActionPerformed
