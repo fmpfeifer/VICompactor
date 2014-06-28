@@ -29,10 +29,15 @@ public class Volume {
     private final BlockReader volumeData;
     private int partitionCount;
     private PartitionScheme partitionScheme;
-    private int sectorSize = 512;
+    private final int sectorSize;
 
     public Volume(BlockReader volumeData) throws IOException {
+        this(volumeData, 512);
+    }
+    
+    public Volume(BlockReader volumeData, int sectorSize) throws IOException {
         this.volumeData = volumeData;
+        this.sectorSize = sectorSize;
         init();
     }
 
@@ -68,12 +73,5 @@ public class Volume {
      */
     public int getSectorSize() {
         return sectorSize;
-    }
-
-    /**
-     * @param sectorSize the sectorSize to set
-     */
-    public void setSectorSize(int sectorSize) {
-        this.sectorSize = sectorSize;
     }
 }
