@@ -206,7 +206,7 @@ public class VDICompactor {
             resp = new VDIBlockReader(new BufferedBlockReader(
                     new FileBlockReader(fresp.getCanonicalPath()), 1024*1024*2));
             UUID puuid = resp.getUuidParent();
-            if (puuid.getMostSignificantBits() != 0 && puuid.getLeastSignificantBits() != 0) {
+            if (puuid.getMostSignificantBits() != 0 || puuid.getLeastSignificantBits() != 0) {
                 VDIBlockReader parent = getParent(puuid, vdis);
                 if (parent == null) {
                     resp.close();
