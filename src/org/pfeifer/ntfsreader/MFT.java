@@ -23,7 +23,7 @@ import java.io.IOException;
  *
  * @author Fabio Melo Pfeifer <fmpfeifer@gmail.com>
  */
-public class MFT extends MFTFile {
+class MFT extends MFTFile {
 
     public MFT(NTFSVolume volume) throws IOException {
         super(volume, true);
