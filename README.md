@@ -9,3 +9,4 @@ In the current version, the program can only understand NTFS filesystem, but oth
 Limitations:
  - only understands NTFS. (ext2/3/4 in the TODO list);
  - No command line interface yet (planned).
+ - It creates a new file, backing up the old one with a "_orig" suffix. In place compact is planned.
