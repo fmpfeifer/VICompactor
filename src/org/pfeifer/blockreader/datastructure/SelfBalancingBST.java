@@ -37,13 +37,13 @@ public class SelfBalancingBST<T> {
         root = put(key, value, root);
     }
 
-    private int height(TreeNode t) {
+    private int height(TreeNode<T> t) {
         return t == null ? -1 : t.height;
     }
 
     private TreeNode<T> put(long key, T value, TreeNode<T> t) {
         if (t == null) {
-            t = new TreeNode(key, value);
+            t = new TreeNode<>(key, value);
         } else if (key < t.key) {
             t.left = put(key, value, t.left);
             if (height(t.left) - height(t.right) == 2) {
