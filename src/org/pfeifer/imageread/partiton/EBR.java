@@ -38,7 +38,8 @@ public class EBR {
     public EBR(Volume volume, long sectorOffset) throws IOException {
         this.volume = volume;
         this.sectorOffset = sectorOffset;
-        LimitBlockReader block = new LimitBlockReader(volume.getVolumeData(), sectorOffset * 512, 512);
+        LimitBlockReader block = new LimitBlockReader(volume.getVolumeData(), 
+                sectorOffset * volume.getSectorSize(), volume.getSectorSize());
         parse(block);
     }
 
