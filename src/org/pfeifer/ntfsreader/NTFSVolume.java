@@ -27,11 +27,10 @@ import org.pfeifer.blockreader.BlockReader;
 public class NTFSVolume {
 
     private final BlockReader dataBlock;
-    private MFTBootRecord bootRecord;
     private final MFT mft;
-    private int bytesPerSector = 512;
-    private int sectorsPerCluster = 8;
-    private int clusterSize = 4096;
+    private int bytesPerSector;
+    private int sectorsPerCluster;
+    private int clusterSize;
     private long firstClusterOfMFT;
     private int mftRecordSize;
     private long volumeSerialNumber;
@@ -81,10 +80,6 @@ public class NTFSVolume {
         return clusterSize;
     }
 
-    public long LCNtoOffset(int LCN) {
-        return LCN * clusterSize;
-    }
-
     public BlockReader getDataBlock() {
         return dataBlock;
     }
@@ -97,11 +92,18 @@ public class NTFSVolume {
         return mftRecordSize;
     }
 
-    public MFT getMFT() {
+    MFT getMFT() {
         return mft;
     }
 
     public int getBytesPerSector() {
         return bytesPerSector;
+    }
+
+    /**
+     * @return the volumeSerialNumber
+     */
+    public long getVolumeSerialNumber() {
+        return volumeSerialNumber;
     }
 }
