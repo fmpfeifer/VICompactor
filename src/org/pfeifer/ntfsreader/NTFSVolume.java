@@ -44,9 +44,7 @@ public class NTFSVolume {
     }
 
     private void parseBootRecord() throws IOException {
-        byte[] buff = new byte[8];
-        dataBlock.get(buff, 3);
-        sysId = new String(buff, "UTF-8");
+        sysId = dataBlock.getString(3, 8, "UTF-8");
 
         if (!"NTFS    ".equals(sysId)) {
             throw new IOException("Invalid NTFS OEM ID.");

@@ -46,12 +46,7 @@ public class MFTFileNameAttribute extends MFTRecordAttribute {
         filenameFlags = data.getInt(offsetToAttr + 0x38);
         fileNamespace = data.getUnsignedByte(offsetToAttr + 0x41);
         int filenameLength = data.getUnsignedByte(offsetToAttr + 0x40);
-        try {
-            byte[] stringData = new byte[filenameLength * 2];
-            data.get(stringData, offsetToAttr + 0x42);
-            fileName = new String(stringData, "UTF-16LE");
-        } catch (UnsupportedEncodingException ex) {
-        }
+        fileName = data.getString(offsetToAttr + 0x42, filenameLength * 2, "UTF-16LE");
         //TODO: parse dates and times
     }
 

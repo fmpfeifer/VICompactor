@@ -1,20 +1,20 @@
 /*
-Copyright 2014-2014
-Fabio Melo Pfeifer
+ Copyright 2014-2014
+ Fabio Melo Pfeifer
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.pfeifer.blockreader;
 
 import java.io.IOException;
@@ -167,14 +167,14 @@ public abstract class BlockReader {
     }
 
     public UUID getUUID(long pos) throws IOException {
-        byte [] buff = new byte[16];
-        get(buff,pos);
+        byte[] buff = new byte[16];
+        get(buff, pos);
         ByteBuffer buffer = ByteBuffer.wrap(buff);
         long mostSig = buffer.getLong();
         long leastSig = buffer.getLong();
         return new UUID(mostSig, leastSig);
     }
-    
+
     public UUID getUUID() throws IOException {
         UUID resp = getUUID(position);
         position += 16;
@@ -391,16 +391,29 @@ public abstract class BlockReader {
         }
         return true;
     }
-    
+
     /**
      * Verify if this block is unnalocated. Subclasses with unnalocated blocks
      * should override it.
+     *
      * @param pos Position of the data block
      * @param size Size of the date block
      * @return true if this block is unnalocated
-     * @throws IOException 
+     * @throws IOException
      */
     public boolean blockIsUnallocated(long pos, int size) throws IOException {
         return false;
+    }
+
+    public String getString(long pos, int size) throws IOException {
+        byte[] buff = new byte[size];
+        this.get(buff, pos);
+        return new String(buff);
+    }
+
+    public String getString(long pos, int size, String encoding) throws IOException {
+        byte[] buff = new byte[size];
+        this.get(buff, pos);
+        return new String(buff, encoding);
     }
 }

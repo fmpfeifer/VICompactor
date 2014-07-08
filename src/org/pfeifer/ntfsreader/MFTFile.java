@@ -89,9 +89,7 @@ public class MFTFile implements VFSObject {
     }
 
     private void parse() throws IOException {
-        byte[] stringData = new byte[4];
-        mftRecordReader.get(stringData, 0);
-        String file = new String(stringData, 0, 4);
+        String file = mftRecordReader.getString(0, 4);
         if (file.equals("FILE")) {
             valid = true;
             mftRecordReader.activateFixup();
