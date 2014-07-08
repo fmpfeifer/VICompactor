@@ -128,9 +128,7 @@ public class GPT extends PartitionScheme {
         if (!MBR.identify(volume)) {
             return false;
         }
-        byte[] signature = new byte[8];
-        volume.getVolumeData().get(signature, volume.getSectorSize());
-        String strSig = new String(signature, "UTF-8");
+        String strSig = volume.getVolumeData().getString(volume.getSectorSize(), 8, "UTF-8");
         return strSig.equals("EFI PART");
     }
 
