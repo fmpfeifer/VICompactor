@@ -19,6 +19,7 @@ package org.pfeifer.ntfsreader;
 
 import java.io.IOException;
 import org.pfeifer.blockreader.BlockReader;
+import org.pfeifer.imageread.partiton.Partition;
 
 /**
  *
@@ -26,6 +27,7 @@ import org.pfeifer.blockreader.BlockReader;
  */
 public class NTFSVolume {
 
+    private final Partition partition;
     private final BlockReader dataBlock;
     private final MFT mft;
     private int bytesPerSector;
@@ -37,8 +39,9 @@ public class NTFSVolume {
     private String sysId;
     private static final boolean debug = false;
 
-    public NTFSVolume(BlockReader dataBlock) throws IOException {
-        this.dataBlock = dataBlock;
+    public NTFSVolume(Partition partition) throws IOException {
+        this.partition = partition;
+        this.dataBlock = partition.getPartitionData();
         parseBootRecord();
         mft = new MFT(this);
     }
@@ -103,5 +106,12 @@ public class NTFSVolume {
      */
     public long getVolumeSerialNumber() {
         return volumeSerialNumber;
+    }
+
+    /**
+     * @return the partition
+     */
+    public Partition getPartition() {
+        return partition;
     }
 }
