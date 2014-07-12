@@ -47,11 +47,11 @@ public class EBR {
         // read first entry
         status = block.getUnsignedByte(0x1be);
         partitionType = block.getUnsignedByte(0x1be + 0x04);
-        firstSectorLBA = sectorOffset + (block.getInt(0x1be + 0x08) & 0xffffffff);
-        sectorCount = block.getInt(0x1be + 0x0c) & 0xffffffff;
+        firstSectorLBA = sectorOffset + block.getUnsignedInt(0x1be + 0x08);
+        sectorCount = block.getUnsignedInt(0x1be + 0x0c);
 
         //read second entry
-        nextEBRSectorOffset = block.getInt(0x1ce + 0x08) & 0xffffffff;
+        nextEBRSectorOffset = block.getUnsignedInt(0x1ce + 0x08);
     }
 
     /**

@@ -59,8 +59,8 @@ public class MBR extends PartitionScheme {
             //block.get(firstBlockCHS,offset+1);
             int partitionType = block.getUnsignedByte(offset + 0x04);
             //block.get(lastBlockCHS,offset+0x05);
-            long firstSectorLBA = block.getInt(offset + 0x08) & 0xffffffff;
-            long sectorCount = block.getInt(offset + 0x0C) & 0xffffffff;
+            long firstSectorLBA = block.getUnsignedInt(offset + 0x08);
+            long sectorCount = block.getUnsignedInt(offset + 0x0C);
 
             if (sectorCount != 0) {
                 parsePartition(firstSectorLBA, sectorCount,
