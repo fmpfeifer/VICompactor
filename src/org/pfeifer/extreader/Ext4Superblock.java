@@ -37,6 +37,7 @@ public class Ext4Superblock {
     private long freeInodeCount;
     private long firstDataBlock;
     private int blockSize;
+    private int clusterSizeBits;
     private int clusterSize;
     private long blocksPerGroup;
     private long inodesPerGroup;
@@ -68,11 +69,11 @@ public class Ext4Superblock {
     private short preallocDirBlocks = 0;
     private short reservedGdtBlocks = 0;
     /*private UUID journalUuid = null;
-    private long journalInode = 0;
-    private long journalDev = 0;
-    private long lastOrphan = 0;
-    private int[] hashSeed = new int[4];
-    private short defHashVersion = 0;*/
+     private long journalInode = 0;
+     private long journalDev = 0;
+     private long lastOrphan = 0;
+     private int[] hashSeed = new int[4];
+     private short defHashVersion = 0;*/
     private int descSize = 0;
     private long defaultMountOptions = 0;
     private long firstMetaBg = 0;
@@ -97,7 +98,8 @@ public class Ext4Superblock {
         freeInodeCount = sb.getUnsignedInt(0x10);
         firstDataBlock = sb.getUnsignedInt(0x14);
         blockSize = 1 << (10 + sb.getUnsignedInt(0x18));
-        clusterSize = 1 << sb.getUnsignedInt(0x1c);
+        clusterSizeBits = (int) sb.getUnsignedInt(0x1c);
+        clusterSize = 1 << clusterSizeBits;
         blocksPerGroup = sb.getUnsignedInt(0x20);
         inodesPerGroup = sb.getUnsignedInt(0x28);
         mountTime = sb.getUnsignedInt(0x2c);
@@ -132,7 +134,7 @@ public class Ext4Superblock {
         preallocBlocks = sb.getUnsignedByte(0xcc);
         preallocDirBlocks = sb.getUnsignedByte(0xcd);
         reservedGdtBlocks = sb.getShort(0xce);
-        
+
         // skipping journal data
         descSize = sb.getUnsignedShort(0xfe);
         defaultMountOptions = sb.getUnsignedInt(0x100);
@@ -146,7 +148,7 @@ public class Ext4Superblock {
         minExtraSize = sb.getUnsignedShort(0x15c);
         wantExtraSize = sb.getUnsignedShort(0x15e);
         flags = sb.getUnsignedInt(0x160);
-        
+
         groupsPerFlex = 1 << sb.getUnsignedByte(0x174);
 
     }
@@ -290,12 +292,43 @@ public class Ext4Superblock {
     public int getDescSize() {
         return descSize;
     }
-    
+
     public long getBlockGroupSizeBytes() {
         return blocksPerGroup * blockSize;
     }
-    
+
     public long getTotalGroups() {
         return totalBlockCount / blocksPerGroup;
+    }
+
+    public boolean isBigAlloc() {
+        return (featureRoCompat & 0x200) != 0;
+    }
+
+    public boolean isMetaBG() {
+        return (featureIncompat & 0x10) != 0;
+    }
+
+    public boolean is64bits() {
+        return (featureIncompat & 0x80) != 0;
+    }
+
+    public boolean isFlexBG() {
+        return (featureIncompat & 0x200) != 0;
+    }
+    
+    public boolean isSparseSuper() {
+        return (featureRoCompat & 0x01) != 0;
+    }
+    
+    public boolean isSparseSuper2() {
+        return (featureCompat & 0x200) != 0;
+    }
+
+    /**
+     * @return the clusterSizeBits
+     */
+    public int getClusterSizeBits() {
+        return clusterSizeBits;
     }
 }

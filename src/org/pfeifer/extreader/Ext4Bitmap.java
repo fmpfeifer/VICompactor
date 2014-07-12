@@ -30,21 +30,30 @@ public class Ext4Bitmap {
     private long blockGroupInUse = -1;
     private final byte[] blockGroupBitmap;
     private final int blocksPerGroup;
+    private boolean isZero;
 
     public Ext4Bitmap(Ext4Volume volume) throws IOException {
         this.volume = volume;
         blockGroupBitmap = new byte[volume.getSuperBlock().getBlockSize()];
         blocksPerGroup = (int) volume.getSuperBlock().getBlocksPerGroup();
+        isZero = false;
     }
 
     public boolean isBlockInUse(long blockNumber) throws IOException {
-        adjustBitmap(blockNumber);
-        int blockInBG = (int) (blockNumber % blocksPerGroup);
+        blockNumber = blockNumber - volume.getSuperBlock().getFirstDataBlock();
+        long groupNumber = blockNumber / blocksPerGroup;
+        long rem = blockNumber % blocksPerGroup;
+        int shift = 0;
+        if (volume.getSuperBlock().isBigAlloc()) {
+            shift = volume.getSuperBlock().getClusterSizeBits();
+        }
+        int blockInBG = (int) (rem >> shift);
+        adjustBitmap(groupNumber);
+
         return ((blockGroupBitmap[blockInBG >> 3] >> (blockInBG & 7)) & 1) == 1;
     }
 
-    private void adjustBitmap(long block) throws IOException {
-        long group = block / volume.getSuperBlock().getBlocksPerGroup();
+    private void adjustBitmap(long group) throws IOException {
         if (group != blockGroupInUse) {
             blockGroupInUse = group;
             fillBlockGroupBitmap();
@@ -57,8 +66,12 @@ public class Ext4Bitmap {
                 volume.getPartition().getPartitionData().get(blockGroupBitmap,
                         volume.getDescriptors().getDescriptor(blockGroupInUse).getBlockBitmapLocation()
                         * volume.getSuperBlock().getBlockSize());
+                isZero = false;
             } else {
-                Arrays.fill(blockGroupBitmap, (byte) 0);
+                if (!isZero) {
+                    Arrays.fill(blockGroupBitmap, (byte) 0);
+                    isZero = true;
+                }
             }
         }
     }
