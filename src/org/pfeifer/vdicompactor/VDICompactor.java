@@ -106,23 +106,17 @@ public class VDICompactor {
 
                 if (windowsPart != null && windowsPart.equals("true")) {
                     try {
-                        NTFSVolume ntfs = new NTFSVolume(p);
-                        NTFSAllocationBitmap bitmap = new NTFSAllocationBitmap(ntfs);
-                        r = new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
+                        r = createNTFSPartition(p);
                     } catch (IOException e) {
                         try {
-                            Ext4Volume ext = new Ext4Volume(p);
-                            ExtAllocationBitmap bitmap = new ExtAllocationBitmap(ext);
-                            r = new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
+                            r = createExt4Partition(p);
                         } catch (IOException ex) {
                             r = p.getPartitionData();
                         }
                     }
                 } else if (linuxPart != null && linuxPart.equals("true")) {
                     try {
-                        Ext4Volume ext = new Ext4Volume(p);
-                        ExtAllocationBitmap bitmap = new ExtAllocationBitmap(ext);
-                        r = new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
+                        r = createExt4Partition(p);
                     } catch (IOException ex) {
                         r = p.getPartitionData();
                     }
@@ -161,6 +155,21 @@ public class VDICompactor {
         }
 
         writer.close();
+    }
+    
+    private AllocationAwareBlockReader createExt4Partition(Partition p) throws IOException {
+        Ext4Volume ext = new Ext4Volume(p);
+        if (ext.getSuperBlock().isMetaBG()) {
+            throw new IOException("MetaBG not implemented yet.");
+        }
+        ExtAllocationBitmap bitmap = new ExtAllocationBitmap(ext);
+        return new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
+    }
+    
+    private AllocationAwareBlockReader createNTFSPartition(Partition p) throws IOException {
+        NTFSVolume ntfs = new NTFSVolume(p);
+        NTFSAllocationBitmap bitmap = new NTFSAllocationBitmap(ntfs);
+        return new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
     }
 
     private void searchVDI(File dir, Map<UUID, VDINode> vdis) throws IOException {
