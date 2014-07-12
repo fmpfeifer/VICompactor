@@ -304,7 +304,7 @@ public abstract class BlockReader {
                         | 0xff00000000000000L);
             }
         } else {
-            throw new RuntimeException("Invalid number length");
+            throw new UnsupportedOperationException("Invalid number length");
         }
 
         return resp;
@@ -362,7 +362,7 @@ public abstract class BlockReader {
                     | (((long) get(offset + 6) & 0xff) << 48));
 
         } else {
-            throw new RuntimeException("Invalid number length");
+            throw new UnsupportedOperationException("Invalid number length");
         }
 
         return resp;
@@ -421,9 +421,12 @@ public abstract class BlockReader {
         int i = 0;
         byte[] buff = new byte[size];
         this.get(buff, pos);
-        while (i < size && buff[i] != (byte) 0) {
+        while (i < size) {
             i++;
+            if (buff[i - 1] == (byte) 0) {
+                break;
+            }
         }
-        return new String(buff, 0, i + 1);
+        return new String(buff, 0, i);
     }
 }
