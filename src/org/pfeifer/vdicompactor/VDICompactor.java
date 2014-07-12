@@ -53,7 +53,7 @@ public class VDICompactor {
      * @throws IOException
      */
     public void compactVDI(String file, String directory, boolean searchDir) throws IOException {
-        VDIBlockReader vdi1 = new VDIBlockReader(new FileBlockReader(file));
+        VDIBlockReader vdi1 = new VDIBlockReader(new BufferedBlockReader(new FileBlockReader(file), 1024*1024*2));
         VDIBlockReader parent = null;
         Map<UUID, VDINode> vdis = new HashMap<>();
         if (vdi1.getUuidParent().getLeastSignificantBits() != 0

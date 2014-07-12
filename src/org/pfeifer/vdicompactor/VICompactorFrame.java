@@ -213,6 +213,8 @@ public class VICompactorFrame extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(VICompactorFrame.this,
                             "Error: " + e.getMessage(),
                             "Error processing file", JOptionPane.ERROR_MESSAGE);
+                } catch (Throwable x) {
+                    x.printStackTrace();
                 }
                 return null;
             }
