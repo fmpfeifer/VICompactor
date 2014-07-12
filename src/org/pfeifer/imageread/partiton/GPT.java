@@ -101,9 +101,14 @@ public class GPT extends PartitionScheme {
                 p.setProperty("partitionTypeUUID", partitionTypeUUID.toString());
                 p.setProperty("uniquePartitionUUID", uniquePartitionUUID.toString());
                 p.setProperty("flags", Long.toString(flags));
-                if (partitionTypeUUID.toString().equals("16e3c9e3-5c0b-b84d-817d-f92df00215ae") ||
-                        partitionTypeUUID.toString().equals("a2a0d0eb-e5b9-3344-87c0-68b6b72699c7")) {
-                    p.setProperty("windowsPartition", "true");
+                switch (partitionTypeUUID.toString()) {
+                    case "16e3c9e3-5c0b-b84d-817d-f92df00215ae":
+                    case "a2a0d0eb-e5b9-3344-87c0-68b6b72699c7":
+                        p.setProperty("windowsPartition", "true");
+                        break;
+                    case "af3dc60f-8384-7247-8e79-3d69d8477de4":
+                        p.setProperty("linuxPartition", "true");
+                        break;
                 }
                 allocatedPartitions.add(p);
                 allPartitions.add(p);

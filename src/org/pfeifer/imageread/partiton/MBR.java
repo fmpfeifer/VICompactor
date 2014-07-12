@@ -72,13 +72,7 @@ public class MBR extends PartitionScheme {
     }
 
     private void parsePartition(long firstSectorLBA, long sectorCount, int partitionType, int number) throws IOException {
-        if (partitionType == 0x07) { //Windows partition
-            Partition newPartition = new Partition(getVolume(), firstSectorLBA,
-                    sectorCount, number);
-            newPartition.setProperty("windowsPartition","true");
-            allocatedPartitions.add(newPartition);
-            allPartitions.add(newPartition);
-        } else if (partitionType == 0x0f) { //extended
+        if (partitionType == 0x0f) { //extended
             EBR extended = new EBR(getVolume(), firstSectorLBA);
             Partition ebrPartition = new Partition(getVolume(), firstSectorLBA, 1, number);
             ebrPartition.setAllocatedPartition(false);
@@ -93,6 +87,20 @@ public class MBR extends PartitionScheme {
         } else if (partitionType != 0) {
             Partition newPartition = new Partition(getVolume(), firstSectorLBA,
                     sectorCount, number);
+            switch (partitionType) {
+                case 0x07: // windows partition
+                case 0x17:
+                case 0x27:
+                case 0x87:
+                case 0xb7:
+                case 0xc7:
+                    newPartition.setProperty("windowsPartition","true");
+                    break;
+                case 0x83: // linux partition
+                case 0x93:
+                    newPartition.setProperty("linuxPartition","true");
+                    break;
+            }
             allocatedPartitions.add(newPartition);
             allPartitions.add(newPartition);
         }
