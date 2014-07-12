@@ -22,6 +22,6 @@ package org.pfeifer.extreader;
  *
  * @author Fabio Melo Pfeifer <fmpfeifer@gmail.com>
  */
-public class ExtVolume {
+public class Ext4Inode {
 
 }
