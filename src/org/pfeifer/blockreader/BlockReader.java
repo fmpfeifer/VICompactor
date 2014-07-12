@@ -416,4 +416,14 @@ public abstract class BlockReader {
         this.get(buff, pos);
         return new String(buff, encoding);
     }
+
+    public String getNullTerminatedString(long pos, int size) throws IOException {
+        int i = 0;
+        byte[] buff = new byte[size];
+        this.get(buff, pos);
+        while (i < size && buff[i] != (byte) 0) {
+            i++;
+        }
+        return new String(buff, 0, i + 1);
+    }
 }
