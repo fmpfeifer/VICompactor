@@ -23,7 +23,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- *
+ * FIXME: this class only works if file size < Integer.MAX_VALUE.
+ * An implementation to map regions of file is needed here.
  * @author Fabio Melo Pfeifer <fmpfeifer@gmail.com>
  */
 public class MappedFileBlockReader extends BlockReader {
