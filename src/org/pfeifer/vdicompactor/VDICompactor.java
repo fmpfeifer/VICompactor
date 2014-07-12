@@ -32,6 +32,7 @@ import org.pfeifer.blockreader.BufferedBlockReader;
 import org.pfeifer.blockreader.ConcatenatedBlockReader;
 import org.pfeifer.blockreader.FileBlockReader;
 import org.pfeifer.blockreader.VDIBlockReader;
+import org.pfeifer.extreader.Ext4Volume;
 import org.pfeifer.ntfsreader.NTFSVolume;
 import org.pfeifer.imageread.partiton.Partition;
 import org.pfeifer.imageread.partiton.Volume;
@@ -101,13 +102,28 @@ public class VDICompactor {
             BlockReader r;
             if (p.isAllocatedPartition()) {
                 String windowsPart = p.getProperty("windowsPartition");
+                String linuxPart = p.getProperty("linuxPartition");
 
                 if (windowsPart != null && windowsPart.equals("true")) {
                     try {
-                        NTFSVolume ntfs = new NTFSVolume(p.getPartitionData());
+                        NTFSVolume ntfs = new NTFSVolume(p);
                         NTFSAllocationBitmap bitmap = new NTFSAllocationBitmap(ntfs);
                         r = new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
                     } catch (IOException e) {
+                        try {
+                            Ext4Volume ext = new Ext4Volume(p);
+                            ExtAllocationBitmap bitmap = new ExtAllocationBitmap(ext);
+                            r = new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
+                        } catch (IOException ex) {
+                            r = p.getPartitionData();
+                        }
+                    }
+                } else if (linuxPart != null && linuxPart.equals("true")) {
+                    try {
+                        Ext4Volume ext = new Ext4Volume(p);
+                        ExtAllocationBitmap bitmap = new ExtAllocationBitmap(ext);
+                        r = new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
+                    } catch (IOException ex) {
                         r = p.getPartitionData();
                     }
                 } else {
@@ -204,7 +220,7 @@ public class VDICompactor {
         if (vdis.containsKey(uuid)) {
             File fresp = vdis.get(uuid).file;
             resp = new VDIBlockReader(new BufferedBlockReader(
-                    new FileBlockReader(fresp.getCanonicalPath()), 1024*1024*2));
+                    new FileBlockReader(fresp.getCanonicalPath()), 1024 * 1024 * 2));
             UUID puuid = resp.getUuidParent();
             if (puuid.getMostSignificantBits() != 0 || puuid.getLeastSignificantBits() != 0) {
                 VDIBlockReader parent = getParent(puuid, vdis);
