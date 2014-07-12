@@ -42,17 +42,18 @@ public class BlockGroupDescriptors {
         int offsetBlockDesc = sb.getBlockSize() == 1024 ? 2 : 1;
         offsetBlockDesc *= sb.getBlockSize();
         int descSize = 32;
-        if ((sb.getFeatureIncompat() & 0x80L) != 0) { // 64 bits
+        if (sb.is64bits()) {
             descSize = 64; //use padding
         }
         long totalGroups = sb.getTotalBlockCount() / sb.getBlocksPerGroup();
         BlockReader r = volume.getPartition().getPartitionData();
 
-        if ((sb.getFeatureIncompat() & 0x10) == 0) { //META_BG disabled
+        if (!sb.isMetaBG()) {
             for (long i = 0; i < totalGroups; i++) {
                 descriptors.put(i, new BlockGroupDescriptor(i, r, offsetBlockDesc + i * descSize, descSize == 64));
             }
         } else {
+            // FIXME: this code is wrong !!!!
             // Size of META_BG
             long meta_bg_size_bg = (sb.getBlockSize() / descSize);
             long meta_bg_size_blocks = meta_bg_size_bg * sb.getBlocksPerGroup();

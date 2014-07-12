@@ -140,7 +140,7 @@ public class Ext4Superblock {
         defaultMountOptions = sb.getUnsignedInt(0x100);
         firstMetaBg = sb.getUnsignedInt(0x104);
         mkfsTime = sb.getUnsignedInt(0x108);
-        if ((featureIncompat & 0x80) != 0) {
+        if (is64bits()) {
             totalBlockCount |= sb.getUnsignedInt(0x150) << 32;
             reservedBlockCount |= sb.getUnsignedInt(0x154) << 32;
             freeBlockCount |= sb.getUnsignedInt(0x158) << 32;
