@@ -53,7 +53,7 @@ public class VDICompactor {
      * @throws IOException
      */
     public void compactVDI(String file, String directory, boolean searchDir) throws IOException {
-        VDIBlockReader vdi1 = new VDIBlockReader(new BufferedBlockReader(new FileBlockReader(file), 1024*1024*2));
+        VDIBlockReader vdi1 = new VDIBlockReader(new BufferedBlockReader(new FileBlockReader(file), 4 * 1024));
         VDIBlockReader parent = null;
         Map<UUID, VDINode> vdis = new HashMap<>();
         if (vdi1.getUuidParent().getLeastSignificantBits() != 0
@@ -86,7 +86,7 @@ public class VDICompactor {
         }
         if (origFile != null) {
             BlockReader reader = new BufferedBlockReader(new FileBlockReader(origFile),
-                    1024 * 1024 * 2);
+                    4 * 1024);
             VDIBlockReader vdiReader = new VDIBlockReader(reader);
             if (parent != null) {
                 vdiReader.setParent(parent);
@@ -156,7 +156,7 @@ public class VDICompactor {
 
         writer.close();
     }
-    
+
     private AllocationAwareBlockReader createExt4Partition(Partition p) throws IOException {
         Ext4Volume ext = new Ext4Volume(p);
         if (ext.getSuperBlock().isMetaBG()) {
@@ -165,7 +165,7 @@ public class VDICompactor {
         ExtAllocationBitmap bitmap = new ExtAllocationBitmap(ext);
         return new AllocationAwareBlockReader(p.getPartitionData(), bitmap);
     }
-    
+
     private AllocationAwareBlockReader createNTFSPartition(Partition p) throws IOException {
         NTFSVolume ntfs = new NTFSVolume(p);
         NTFSAllocationBitmap bitmap = new NTFSAllocationBitmap(ntfs);
@@ -198,7 +198,10 @@ public class VDICompactor {
                 if (f.isDirectory()) {
                     searchVDI(f, vdis);
                 } else {
-                    VDIBlockReader reader = new VDIBlockReader(new FileBlockReader(f.getCanonicalPath()));
+                    VDIBlockReader reader = new VDIBlockReader(
+                            new BufferedBlockReader(
+                                    new FileBlockReader(f.getCanonicalPath()),
+                                    4 * 1024));
                     UUID uuid = reader.getUuidThisVDI();
                     reader.close();
                     VDINode node = new VDINode(uuid, f);
@@ -229,7 +232,8 @@ public class VDICompactor {
         if (vdis.containsKey(uuid)) {
             File fresp = vdis.get(uuid).file;
             resp = new VDIBlockReader(new BufferedBlockReader(
-                    new FileBlockReader(fresp.getCanonicalPath()), 1024 * 1024 * 2));
+                    new FileBlockReader(fresp.getCanonicalPath()),
+                    4 * 1024));
             UUID puuid = resp.getUuidParent();
             if (puuid.getMostSignificantBits() != 0 || puuid.getLeastSignificantBits() != 0) {
                 VDIBlockReader parent = getParent(puuid, vdis);
