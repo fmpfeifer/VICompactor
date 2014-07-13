@@ -39,7 +39,7 @@ public class BlockGroupDescriptors {
 
     private void init() throws IOException {
         Ext4Superblock sb = volume.getSuperBlock();
-        int offsetBlockDesc = sb.getBlockSize() == 1024 ? 2 : 1;
+        long offsetBlockDesc = sb.getBlockSize() == 1024 ? 2 : 1;
         offsetBlockDesc *= sb.getBlockSize();
         int descSize = 32;
         if (sb.is64bits()) {
@@ -53,28 +53,24 @@ public class BlockGroupDescriptors {
                 descriptors.put(i, new BlockGroupDescriptor(i, r, offsetBlockDesc + i * descSize, descSize == 64));
             }
         } else {
-            // FIXME: this code is wrong !!!!
+            // TODO: code totally untested
             // Size of META_BG
-            long meta_bg_size_bg = (sb.getBlockSize() / descSize);
-            long meta_bg_size_blocks = meta_bg_size_bg * sb.getBlocksPerGroup();
-            int total_meta_bg = (int) (sb.getTotalBlockCount() / meta_bg_size_blocks);
-            if (total_meta_bg * meta_bg_size_blocks < sb.getTotalBlockCount()) {
-                total_meta_bg += 1;
-            }
-            long i = 0;
-            for (int mbg = 0; mbg < total_meta_bg; mbg++) {
-                for (int j = 0; j < meta_bg_size_bg; j++) {
-                    if ( j == 1 && sb.getBlockSize() == 1024) {
-                        offsetBlockDesc -= 1024;
-                    }
-                    long offsetMG = j * meta_bg_size_blocks * sb.getBlockSize();
-                    descriptors.put(i, new BlockGroupDescriptor(i, r, offsetMG + offsetBlockDesc + j * descSize, descSize == 64));
-                    i++;
+            long meta_bg_size_bg = (sb.getBlockSize() / descSize); //number of groups in bg
+            long meta_bg_size_bytes = meta_bg_size_bg * sb.getBlocksPerGroup() * sb.getBlockSize();
+            long firstMetaBG = sb.getFirstMetaBg();
+            for (long i = 0; i < totalGroups; i++) {
+                if (i < firstMetaBG) {
+                    descriptors.put(i, new BlockGroupDescriptor(i, r, offsetBlockDesc + i * descSize, descSize == 64));
+                } else {
+                    long meta_bg_nr = ( i - firstMetaBG ) / meta_bg_size_bg;
+                    offsetBlockDesc = sb.getFirstMetaBg() * sb.getBlockGroupSizeBytes() + meta_bg_nr * meta_bg_size_bytes + sb.getBlockSize();
+                    long off2 = (i - firstMetaBG ) % meta_bg_size_bg;
+                    descriptors.put(i, new BlockGroupDescriptor(i, r, offsetBlockDesc + off2 * descSize, descSize == 64 ));
                 }
             }
         }
     }
-
+    
     public BlockGroupDescriptor getDescriptor(long n) {
         return descriptors.get(n);
     }

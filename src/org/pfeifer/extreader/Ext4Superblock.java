@@ -331,4 +331,11 @@ public class Ext4Superblock {
     public int getClusterSizeBits() {
         return clusterSizeBits;
     }
+
+    /**
+     * @return the firstMetaBg
+     */
+    public long getFirstMetaBg() {
+        return firstMetaBg;
+    }
 }
