@@ -53,7 +53,7 @@ public class VDICompactor {
      * @throws IOException
      */
     public void compactVDI(String file, String directory, boolean searchDir) throws IOException {
-        VDIBlockReader vdi1 = new VDIBlockReader(new BufferedBlockReader(new FileBlockReader(file), 4 * 1024));
+        VDIBlockReader vdi1 = new VDIBlockReader(new BufferedBlockReader(new FileBlockReader(file)));
         VDIBlockReader parent = null;
         Map<UUID, VDINode> vdis = new HashMap<>();
         if (vdi1.getUuidParent().getLeastSignificantBits() != 0
@@ -85,8 +85,7 @@ public class VDICompactor {
             }
         }
         if (origFile != null) {
-            BlockReader reader = new BufferedBlockReader(new FileBlockReader(origFile),
-                    4 * 1024);
+            BlockReader reader = new BufferedBlockReader(new FileBlockReader(origFile));
             VDIBlockReader vdiReader = new VDIBlockReader(reader);
             if (parent != null) {
                 vdiReader.setParent(parent);
@@ -200,8 +199,7 @@ public class VDICompactor {
                 } else {
                     VDIBlockReader reader = new VDIBlockReader(
                             new BufferedBlockReader(
-                                    new FileBlockReader(f.getCanonicalPath()),
-                                    4 * 1024));
+                                    new FileBlockReader(f.getCanonicalPath())));
                     UUID uuid = reader.getUuidThisVDI();
                     reader.close();
                     VDINode node = new VDINode(uuid, f);
@@ -232,8 +230,7 @@ public class VDICompactor {
         if (vdis.containsKey(uuid)) {
             File fresp = vdis.get(uuid).file;
             resp = new VDIBlockReader(new BufferedBlockReader(
-                    new FileBlockReader(fresp.getCanonicalPath()),
-                    4 * 1024));
+                    new FileBlockReader(fresp.getCanonicalPath())));
             UUID puuid = resp.getUuidParent();
             if (puuid.getMostSignificantBits() != 0 || puuid.getLeastSignificantBits() != 0) {
                 VDIBlockReader parent = getParent(puuid, vdis);

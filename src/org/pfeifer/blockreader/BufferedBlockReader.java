@@ -34,10 +34,11 @@ public class BufferedBlockReader extends BlockReader {
     private long oldBufferPos = 0;
     private long oldBufferEnd = 0;
     private boolean avoidDoubleBuffering = true;
+    private static final int DEFAULT_BUFFER_SIZE = 4 * 1024;
 
     public BufferedBlockReader(BlockReader underlying) {
         this.underlying = underlying;
-        bufferSize = 16 * 1024;
+        bufferSize = DEFAULT_BUFFER_SIZE;
         allocateBuffers();
         seek(underlying.getPosition());
     }
