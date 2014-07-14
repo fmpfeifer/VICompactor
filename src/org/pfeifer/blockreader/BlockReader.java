@@ -155,9 +155,8 @@ public abstract class BlockReader {
     }
 
     public short getShort() throws IOException {
-        short resp = getShort(position);
         position += 2;
-        return resp;
+        return getShort(position - 2);
     }
 
     public int getUnsignedShort(long offset) throws IOException {
@@ -165,9 +164,8 @@ public abstract class BlockReader {
     }
 
     public int getUnsignedShort() throws IOException {
-        int resp = getUnsignedShort(position);
         position += 2;
-        return resp;
+        return getUnsignedShort(position - 2);
     }
 
     public UUID getUUID(long pos) throws IOException {
@@ -180,9 +178,8 @@ public abstract class BlockReader {
     }
 
     public UUID getUUID() throws IOException {
-        UUID resp = getUUID(position);
         position += 16;
-        return resp;
+        return getUUID(position - 16);
     }
 
     public int getInt(long offset) throws IOException {
@@ -191,9 +188,8 @@ public abstract class BlockReader {
     }
 
     public int getInt() throws IOException {
-        int resp = getInt(position);
         position += 4;
-        return resp;
+        return getInt(position - 4);
     }
 
     public long getLong(long offset) throws IOException {
@@ -202,9 +198,8 @@ public abstract class BlockReader {
     }
 
     public long getLong() throws IOException {
-        long resp = getLong(position);
         position += 8;
-        return resp;
+        return getLong(position - 8);
     }
 
     public long getUnsignedInt(long offset) throws IOException {
@@ -212,9 +207,8 @@ public abstract class BlockReader {
     }
 
     public long getUnsignedInt() throws IOException {
-        long resp = getUnsignedInt(position);
         position += 4;
-        return resp;
+        return getUnsignedInt(position - 4);
     }
 
     public long getNumber(long offset, int length) throws IOException {
@@ -304,9 +298,8 @@ public abstract class BlockReader {
     }
 
     public long getNumber(int length) throws IOException {
-        long resp = getNumber(position, length);
         position += length;
-        return resp;
+        return getNumber(position - length, length);
     }
 
     public long getUnsignedNumber(long offset, int length) throws IOException {
@@ -362,9 +355,8 @@ public abstract class BlockReader {
     }
 
     public long getUnsignedNumber(int length) throws IOException {
-        long resp = getUnsignedNumber(position, length);
         position += length;
-        return resp;
+        return getUnsignedNumber(position - length, length);
     }
 
     /**
