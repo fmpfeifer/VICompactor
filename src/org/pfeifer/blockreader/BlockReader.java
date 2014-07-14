@@ -28,12 +28,16 @@ import java.util.UUID;
  * @author Fabio Melo Pfeifer <fmpfeifer@gmail.com>
  */
 public abstract class BlockReader {
-
-    private final ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;
+    
+    private final byte [] parseBufferArray;
+    private final ByteBuffer parseBuffer;
     private long position;
 
     public BlockReader() {
         position = 0;
+        parseBufferArray = new byte[8];
+        parseBuffer = ByteBuffer.wrap(parseBufferArray);
+        parseBuffer.order(ByteOrder.LITTLE_ENDIAN);
     }
 
     /**
@@ -146,7 +150,8 @@ public abstract class BlockReader {
      return byteOrder;
      }*/
     public short getShort(long offset) throws IOException {
-        return (short) ((get(offset) & 0xff) | (get(offset + 1) << 8));
+        get(parseBufferArray, offset, 0, 2);
+        return parseBuffer.getShort(0);
     }
 
     public short getShort() throws IOException {
@@ -156,8 +161,7 @@ public abstract class BlockReader {
     }
 
     public int getUnsignedShort(long offset) throws IOException {
-        return (int) (((get(offset) & 0xff))
-                | ((get(offset + 1) & 0xff) << 8));
+        return getShort(offset) & 0x00ffff;
     }
 
     public int getUnsignedShort() throws IOException {
@@ -182,10 +186,8 @@ public abstract class BlockReader {
     }
 
     public int getInt(long offset) throws IOException {
-        return (int) ((((get(offset) & 0xff))
-                | ((get(offset + 1) & 0xff) << 8)
-                | ((get(offset + 2) & 0xff) << 16)
-                | ((get(offset + 3) & 0xff) << 24)));
+        get(parseBufferArray, offset, 0, 4);
+        return parseBuffer.getInt(0);
     }
 
     public int getInt() throws IOException {
@@ -195,14 +197,8 @@ public abstract class BlockReader {
     }
 
     public long getLong(long offset) throws IOException {
-        return ((((long) get(offset) & 0xff))
-                | (((long) get(offset + 1) & 0xff) << 8)
-                | (((long) get(offset + 2) & 0xff) << 16)
-                | (((long) get(offset + 3) & 0xff) << 24)
-                | (((long) get(offset + 4) & 0xff) << 32)
-                | (((long) get(offset + 5) & 0xff) << 40)
-                | (((long) get(offset + 6) & 0xff) << 48)
-                | (((long) get(offset + 7) & 0xff) << 56));
+        get(parseBufferArray, offset, 0, 8);
+        return parseBuffer.getLong(0);
     }
 
     public long getLong() throws IOException {
@@ -212,10 +208,7 @@ public abstract class BlockReader {
     }
 
     public long getUnsignedInt(long offset) throws IOException {
-        return ((((long) get(offset) & 0xff))
-                | (((long) get(offset + 1) & 0xff) << 8)
-                | (((long) get(offset + 2) & 0xff) << 16)
-                | (((long) get(offset + 3) & 0xff) << 24));
+        return getInt(offset) & 0xffffffffL;
     }
 
     public long getUnsignedInt() throws IOException {
@@ -428,5 +421,19 @@ public abstract class BlockReader {
             }
         }
         return new String(buff, 0, i);
+    }
+
+    /**
+     * @return the byteOrder
+     */
+    public ByteOrder getByteOrder() {
+        return parseBuffer.order();
+    }
+
+    /**
+     * @param byteOrder the byteOrder to set
+     */
+    public void setByteOrder(ByteOrder byteOrder) {
+        parseBuffer.order(byteOrder);
     }
 }
