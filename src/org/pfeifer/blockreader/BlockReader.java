@@ -28,8 +28,8 @@ import java.util.UUID;
  * @author Fabio Melo Pfeifer <fmpfeifer@gmail.com>
  */
 public abstract class BlockReader {
-    
-    private final byte [] parseBufferArray;
+
+    private final byte[] parseBufferArray;
     private final ByteBuffer parseBuffer;
     private long position;
 
@@ -213,6 +213,9 @@ public abstract class BlockReader {
 
     public long getNumber(long offset, int length) throws IOException {
         long resp = 0;
+        if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
+            throw new UnsupportedOperationException("Big endian getNumber not implemented");
+        }
 
         if (length == 1) {
             resp = get(offset);
@@ -304,7 +307,10 @@ public abstract class BlockReader {
 
     public long getUnsignedNumber(long offset, int length) throws IOException {
         long resp = 0;
-
+        if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
+            throw new UnsupportedOperationException("Big endian getNumber not implemented");
+        }
+        
         if (length == 1) {
             resp = get(offset) & 0xff;
         } else if (length == 2) {
