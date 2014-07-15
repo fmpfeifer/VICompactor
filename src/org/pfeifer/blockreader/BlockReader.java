@@ -39,6 +39,18 @@ public abstract class BlockReader {
         parseBuffer = ByteBuffer.wrap(parseBufferArray);
         parseBuffer.order(ByteOrder.LITTLE_ENDIAN);
     }
+    
+    private static final long [] unsMask = new long [] {
+        0x00L,
+        0xffL,
+        0xffffL,
+        0xffffffL,
+        0xffffffffL,
+        0xffffffffffL,
+        0xffffffffffffL,
+        0xffffffffffffffL,
+        0x7fffffffffffffffL
+    };
 
     /**
      * Get byte in given position
@@ -212,89 +224,90 @@ public abstract class BlockReader {
     }
 
     public long getNumber(long offset, int length) throws IOException {
-        long resp = 0;
-        if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
-            throw new UnsupportedOperationException("Big endian getNumber not implemented");
-        }
-
-        if (length == 1) {
-            resp = get(offset);
-        } else if (length == 2) {
-            resp = getShort(offset);
-        } else if (length == 4) {
-            resp = getInt(offset);
-        } else if (length == 8) {
-            resp = getLong(offset);
-        } else if (length == 3) {
-            byte b3;
-            if (((b3 = get(offset + 2)) & 0x80) == 0) { //positivo
-                int i = (int) ((((get(offset) & 0xff))
-                        | ((get(offset + 1) & 0xff) << 8)
-                        | ((b3 & 0xff) << 16)));
-                resp = i;
-            } else {
-                int i = (int) ((((get(offset) & 0xff))
-                        | ((get(offset + 1) & 0xff) << 8)
-                        | ((b3 & 0xff) << 16)
-                        | 0xff000000));
-                resp = i;
+        long resp;
+        switch (length) {
+            case 1:
+                resp = get(offset);
+                break;
+            case 2:
+                resp = getShort(offset);
+                break;
+            case 4:
+                resp = getInt(offset);
+                break;
+            case 8:
+                resp = getLong(offset);
+                break;
+            case 3: {
+                byte msb;
+                short lss;
+                if (getByteOrder() == ByteOrder.LITTLE_ENDIAN) {
+                    msb = get(offset + 2);
+                    lss = getShort(offset);
+                } else {
+                    msb = get(offset);
+                    lss = getShort(offset + 1);
+                }
+                if ((msb & 0x80) == 0) { //positive
+                    resp = ((msb << 16) | (lss & 0xffff));
+                } else { //negative
+                    resp = ((msb & 0xff) << 16) | (lss & 0xffff) | 0xff000000;
+                }
+                break;
             }
-        } else if (length == 5) {
-            byte b4;
-            if (((b4 = get(offset + 4)) & 0x80) == 0) {
-                resp = ((((long) get(offset) & 0xff))
-                        | (((long) get(offset + 1) & 0xff) << 8)
-                        | (((long) get(offset + 2) & 0xff) << 16)
-                        | (((long) get(offset + 3) & 0xff) << 24)
-                        | (((long) b4 & 0xff) << 32));
-            } else {
-                resp = ((((long) get(offset) & 0xff))
-                        | (((long) get(offset + 1) & 0xff) << 8)
-                        | (((long) get(offset + 2) & 0xff) << 16)
-                        | (((long) get(offset + 3) & 0xff) << 24)
-                        | (((long) b4 & 0xff) << 32)
-                        | 0xffffff0000000000L);
+            case 5: {
+                byte msb;
+                int lsi;
+                if (getByteOrder() == ByteOrder.LITTLE_ENDIAN) {
+                    msb = get(offset + 4);
+                    lsi = getInt(offset);
+                } else {
+                    msb = get(offset);
+                    lsi = getInt(offset + 1);
+                }
+                if ((msb & 0x80) == 0) { //positive
+                    resp = ((msb << 32) | (lsi & 0xffffffff));
+                } else { //negative
+                    resp = ((msb & 0xffL) << 32) | (lsi & 0xffffffff) | 0xffffff0000000000L;
+                }
+                break;
             }
-        } else if (length == 6) {
-            byte b5;
-            if (((b5 = get(offset + 5)) & 0x80) == 0) {
-                resp = ((((long) get(offset) & 0xff))
-                        | (((long) get(offset + 1) & 0xff) << 8)
-                        | (((long) get(offset + 2) & 0xff) << 16)
-                        | (((long) get(offset + 3) & 0xff) << 24)
-                        | (((long) get(offset + 4) & 0xff) << 32)
-                        | (((long) b5 & 0xff) << 40));
-            } else {
-                resp = ((((long) get(offset) & 0xff))
-                        | (((long) get(offset + 1) & 0xff) << 8)
-                        | (((long) get(offset + 2) & 0xff) << 16)
-                        | (((long) get(offset + 3) & 0xff) << 24)
-                        | (((long) get(offset + 4) & 0xff) << 32)
-                        | (((long) b5 & 0xff) << 40)
-                        | 0xffff000000000000L);
+            case 6: {
+                short mss;
+                int lsi;
+                if (getByteOrder() == ByteOrder.LITTLE_ENDIAN) {
+                    mss = getShort(offset + 4);
+                    lsi = getInt(offset);
+                } else {
+                    mss = get(offset);
+                    lsi = getInt(offset + 2);
+                }
+                if ((mss & 0x8000) == 0) { //positive
+                    resp = ((mss << 32) | (lsi & 0xffffffff));
+                } else { //negative
+                    resp = ((mss & 0xffffL) << 32) | (lsi & 0xffffffff) | 0xffff000000000000L;
+                }
+                break;
             }
-        } else if (length == 7) {
-            byte b6;
-            if (((b6 = get(offset + 6)) & 0x80) == 0) {
-                resp = ((((long) get(offset) & 0xff))
-                        | (((long) get(offset + 1) & 0xff) << 8)
-                        | (((long) get(offset + 2) & 0xff) << 16)
-                        | (((long) get(offset + 3) & 0xff) << 24)
-                        | (((long) get(offset + 4) & 0xff) << 32)
-                        | (((long) get(offset + 5) & 0xff) << 40)
-                        | (((long) b6 & 0xff) << 48));
-            } else {
-                resp = ((((long) get(offset) & 0xff))
-                        | (((long) get(offset + 1) & 0xff) << 8)
-                        | (((long) get(offset + 2) & 0xff) << 16)
-                        | (((long) get(offset + 3) & 0xff) << 24)
-                        | (((long) get(offset + 4) & 0xff) << 32)
-                        | (((long) get(offset + 5) & 0xff) << 40)
-                        | (((long) b6 & 0xff) << 48)
-                        | 0xff00000000000000L);
+            case 7: {
+                long msi;
+                int lsi;
+                if (getByteOrder() == ByteOrder.LITTLE_ENDIAN) {
+                    msi = getNumber(offset + 4, 3);
+                    lsi = getInt(offset);
+                } else {
+                    msi = getNumber(offset, 3);
+                    lsi = getInt(offset + 3);
+                }
+                if ((msi & 0x800000) == 0) { //positive
+                    resp = ((msi << 32) | (lsi & 0xffffffff));
+                } else { //negative
+                    resp = ((msi & 0xffffffL) << 32) | (lsi & 0xffffffffL) | 0xff00000000000000L;
+                }
+                break;
             }
-        } else {
-            throw new UnsupportedOperationException("Invalid number length");
+            default:
+                throw new UnsupportedOperationException("Invalid number length");
         }
 
         return resp;
@@ -304,60 +317,9 @@ public abstract class BlockReader {
         position += length;
         return getNumber(position - length, length);
     }
-
+    
     public long getUnsignedNumber(long offset, int length) throws IOException {
-        long resp = 0;
-        if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
-            throw new UnsupportedOperationException("Big endian getNumber not implemented");
-        }
-        
-        if (length == 1) {
-            resp = get(offset) & 0xff;
-        } else if (length == 2) {
-            resp = getUnsignedShort(offset);
-        } else if (length == 4) {
-            resp = getUnsignedInt(offset);
-        } else if (length == 8) {
-            resp = getLong(offset) & 0x7fffffffffffffffL;
-        } else if (length == 3) {
-
-            int i = (int) ((((get(offset) & 0xff))
-                    | ((get(offset + 1) & 0xff) << 8)
-                    | ((get(offset + 3) & 0xff) << 16)));
-            resp = i;
-
-        } else if (length == 5) {
-
-            resp = ((((long) get(offset) & 0xff))
-                    | (((long) get(offset + 1) & 0xff) << 8)
-                    | (((long) get(offset + 2) & 0xff) << 16)
-                    | (((long) get(offset + 3) & 0xff) << 24)
-                    | (((long) get(offset + 4) & 0xff) << 32));
-
-        } else if (length == 6) {
-
-            resp = ((((long) get(offset) & 0xff))
-                    | (((long) get(offset + 1) & 0xff) << 8)
-                    | (((long) get(offset + 2) & 0xff) << 16)
-                    | (((long) get(offset + 3) & 0xff) << 24)
-                    | (((long) get(offset + 4) & 0xff) << 32)
-                    | (((long) get(offset + 5) & 0xff) << 40));
-
-        } else if (length == 7) {
-
-            resp = ((((long) get(offset) & 0xff))
-                    | (((long) get(offset + 1) & 0xff) << 8)
-                    | (((long) get(offset + 2) & 0xff) << 16)
-                    | (((long) get(offset + 3) & 0xff) << 24)
-                    | (((long) get(offset + 4) & 0xff) << 32)
-                    | (((long) get(offset + 5) & 0xff) << 40)
-                    | (((long) get(offset + 6) & 0xff) << 48));
-
-        } else {
-            throw new UnsupportedOperationException("Invalid number length");
-        }
-
-        return resp;
+        return getNumber(offset, length) & unsMask[length];
     }
 
     public long getUnsignedNumber(int length) throws IOException {
