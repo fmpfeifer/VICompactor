@@ -1,20 +1,20 @@
 /*
-Copyright 2014-2014
-Fabio Melo Pfeifer
+ Copyright 2014-2014
+ Fabio Melo Pfeifer
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.pfeifer.blockreader;
 
 import java.io.IOException;
@@ -27,14 +27,12 @@ public class BufferedBlockReader extends BlockReader {
 
     private final int bufferSize;
     private byte[] buffer;
-    private byte[] oldbuffer;
     private final BlockReader underlying;
     private long bufferPos = 0;
     private long bufferEnd = 0;
-    private long oldBufferPos = 0;
-    private long oldBufferEnd = 0;
     private boolean avoidDoubleBuffering = true;
     private static final int DEFAULT_BUFFER_SIZE = 4 * 1024;
+    private boolean keepBufferAligned = true;
 
     public BufferedBlockReader(BlockReader underlying) {
         this.underlying = underlying;
@@ -51,15 +49,11 @@ public class BufferedBlockReader extends BlockReader {
 
     private void allocateBuffers() {
         buffer = new byte[bufferSize];
-        oldbuffer = new byte[bufferSize];
     }
 
     @Override
     public byte get(long pos) throws IOException {
         if (pos >= bufferEnd || pos < bufferPos) {
-            if (!(pos >= oldBufferEnd || pos < oldBufferPos)) {
-                return oldbuffer[(int) (pos - oldBufferPos)];
-            }
             fillBuffer(pos - pos % bufferSize);
         }
         return buffer[(int) (pos - bufferPos)];
@@ -73,7 +67,7 @@ public class BufferedBlockReader extends BlockReader {
     @Override
     public void close() throws IOException {
         underlying.close();
-        buffer = oldbuffer = null;
+        buffer = null;
     }
 
     @Override
@@ -98,30 +92,23 @@ public class BufferedBlockReader extends BlockReader {
                 read = length;
             }
 
-            byte[] currBuff;
             long b, l;
             int x = destPos;
             int q = read;
 
             while (q > 0) {
                 if (pos >= bufferPos && pos < bufferEnd) {
-                    currBuff = buffer;
                     b = pos - bufferPos;
                     l = bufferEnd - pos;
-                } else if (pos >= oldBufferPos && pos < oldBufferEnd) {
-                    currBuff = oldbuffer;
-                    b = pos - oldBufferPos;
-                    l = oldBufferEnd - pos;
                 } else {
                     fillBuffer(pos - pos % bufferSize);
-                    currBuff = buffer;
                     b = pos - bufferPos;
                     l = bufferEnd - pos;
                 }
 
                 l = Math.min(l, q);
 
-                System.arraycopy(currBuff, (int) b, resp, x, (int) l);
+                System.arraycopy(buffer, (int) b, resp, x, (int) l);
                 x += l;
                 pos += l;
                 q -= l;
@@ -132,15 +119,11 @@ public class BufferedBlockReader extends BlockReader {
     }
 
     private void fillBuffer(long pos) throws IOException {
-        oldBufferPos = bufferPos;
-        oldBufferEnd = bufferEnd;
-
-        byte[] bufferTemp = oldbuffer;
-        oldbuffer = buffer;
-        buffer = bufferTemp;
-
-        bufferEnd = underlying.get(buffer, pos, 0, buffer.length) + pos;
         bufferPos = pos;
+        if (keepBufferAligned) {
+            bufferPos -= pos % bufferSize;
+        }
+        bufferEnd = bufferPos + underlying.get(buffer, bufferPos, 0, buffer.length);
     }
 
     /**
@@ -156,9 +139,23 @@ public class BufferedBlockReader extends BlockReader {
     public void setAvoidDoubleBuffering(boolean avoidDoubleBuffering) {
         this.avoidDoubleBuffering = avoidDoubleBuffering;
     }
-    
+
     @Override
     public boolean blockIsUnallocated(long pos, int size) throws IOException {
         return underlying.blockIsUnallocated(pos, size);
+    }
+
+    /**
+     * @return the keepBufferAligned
+     */
+    public boolean isKeepBufferAligned() {
+        return keepBufferAligned;
+    }
+
+    /**
+     * @param keepBufferAligned the keepBufferAligned to set
+     */
+    public void setKeepBufferAligned(boolean keepBufferAligned) {
+        this.keepBufferAligned = keepBufferAligned;
     }
 }
