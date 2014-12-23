@@ -69,6 +69,7 @@ public class SelfBalancingBSTTest {
         Integer i11 = tree1.searchLessOrEqual(11);
         Integer i12 = tree1.searchLessOrEqual(12);
         Integer i17 = tree1.searchLessOrEqual(17);
+        Integer i20 = tree1.searchLessOrEqual(20);
 
         assertEquals(i1, (Integer) 1);
         assertEquals(i3, (Integer) 3);
@@ -77,6 +78,7 @@ public class SelfBalancingBSTTest {
         assertEquals(i11, (Integer) 11);
         assertEquals(i12, (Integer) 12);
         assertEquals(i17, (Integer) 17);
+        assertEquals(i20, (Integer) 17);
 
     }
 
