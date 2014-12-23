@@ -118,19 +118,18 @@ public class SelfBalancingBST<T> {
         T resp = null;
         while ((r != null) && resp == null) {
             if (key < r.key) {
-                return searchLessOrEqual(r.left, key);
+                r = r.left;
             } else if (key > r.key) {
                 if (r.right == null) {
-                    return r.value;
+                    resp = r.value;
                 } else {
                     resp = searchLessOrEqual(r.right, key);
                     if (resp == null) {
-                        return r.value;
+                        resp = r.value;
                     }
-                    return resp;
                 }
             } else {
-                return r.value;
+                resp = r.value;
             }
         }
         return resp;
