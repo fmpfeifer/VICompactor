@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+}
+
+version = '0.3'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'org.pfeifer.vdicompactor.VICompactorFrame'
+    ext.mainClassName = ext.mainClass
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
+
+sourceSets {
+    main.java.srcDirs = [ 'src' ]
+    test.java.srcDirs = [ 'test' ]
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClass
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
